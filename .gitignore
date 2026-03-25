@@ -1,0 +1,17 @@
+# Data - Never load it on GitHub
+data/
+db/
+
+# Virtual environments
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+
+# heavy models
+model/*.pkl
+model/*.joblib
