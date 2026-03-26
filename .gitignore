@@ -12,6 +12,9 @@ __pycache__/
 *.pyo
 .DS_Store
 
-# heavy models
+# Heavy models
 model/*.pkl
 model/*.joblib
+
+# Log files
+db/extraction.log
