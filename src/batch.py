@@ -45,8 +45,15 @@ def discover_recordings(data_dir: str = "data/") -> pd.DataFrame:
         psg_path = os.path.join(data_dir, psg_file)
 
         # Extract patient_id from filename (e.g. SC4001 from SC4001E0-PSG.edf)
-        match = re.match(r"^([A-Z]{2}\d{4})", psg_file)
-        patient_id = match.group(1) if match else psg_file.replace("-PSG.edf", "")
+        # SC4001E0-PSG.edf → patient_id="SC4001", night=1
+        # SC4002E0-PSG.edf → patient_id="SC4001", night=2
+        match = re.match(r"^[A-Z]{2}4(\d{2})(\d)", psg_file)
+        if match:
+            patient_id = match.group(1)       # "00", "01", ... "78"
+            night      = int(match.group(2))  # 1 or 2
+        else:
+            patient_id = psg_file.replace("E0-PSG.edf", "")
+            night      = 0
 
         # Find matching hypnogram (same prefix, contains "Hypnogram")
         hypnogram_file = psg_file.replace("E0-PSG", "EC-Hypnogram")
@@ -58,6 +65,7 @@ def discover_recordings(data_dir: str = "data/") -> pd.DataFrame:
 
         records.append({
             "patient_id":     patient_id,
+            "night":          night,
             "psg_path":       psg_path,
             "hypnogram_path": hypnogram_path,
             "has_hypnogram":  has_hypnogram,
@@ -108,6 +116,7 @@ def run_batch_extraction(data_dir: str = "data/") -> pd.DataFrame:
         # No partial data is appended to all_features.
         try:
             df_patient = extract_features(psg_path, hypnogram_path, patient_id)
+            df_patient["night"] = row["night"]
 
             if df_patient.empty:
                 msg = (f"SKIP | {patient_id} | {os.path.basename(psg_path)} | "
