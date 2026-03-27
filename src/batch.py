@@ -1,5 +1,6 @@
 import os
 import re
+import glob
 import logging
 import pandas as pd
 from datetime import datetime
@@ -55,10 +56,10 @@ def discover_recordings(data_dir: str = "data/") -> pd.DataFrame:
             patient_id = psg_file.replace("E0-PSG.edf", "")
             night      = 0
 
-        # Find matching hypnogram (same prefix, contains "Hypnogram")
-        hypnogram_file = psg_file.replace("E0-PSG", "EC-Hypnogram")
-        hypnogram_path = os.path.join(data_dir, hypnogram_file)
-        has_hypnogram  = os.path.exists(hypnogram_path)
+        pattern       = psg_file.replace("E0-PSG.edf", "E?-Hypnogram.edf")
+        matches       = glob.glob(os.path.join(data_dir, pattern))
+        has_hypnogram = len(matches) > 0
+        hypnogram_path = matches[0] if has_hypnogram else None
 
         if not has_hypnogram:
             hypnogram_path = None
